@@ -14,6 +14,13 @@ RSpec.describe Homebrew::Cmd::Doctor do
       .to output(/This is an integration test/).to_stderr
   end
 
+  specify "prints json when requested" do
+    cmd = klass.new(["--json"])
+
+    expect { cmd.run }
+      .to output(/"tier": 1/).to_stdout
+  end
+
   specify "check_missing_deps reports formula and cask dependencies", :cask do
     formula = instance_double(Formula, full_name:            "needs-foo",
                                        missing_dependencies: [instance_double(Dependency, to_s: "foo")])
