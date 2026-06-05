@@ -281,7 +281,10 @@ RSpec.describe Homebrew::Bundle::Brew do
       # don't try to load gcc/glibc
       allow(DevelopmentTools).to receive_messages(needs_libc_formula?: false, needs_compiler_formula?: false)
 
-      stub_formula_loader formula(formula_name) { url "mysql-1.0" }
+      stub_formula_loader formula(formula_name) {
+        T.bind(self, T.class_of(Formula))
+        url "mysql-1.0"
+      }
     end
 
     context "when the formula is installed" do
@@ -451,6 +454,7 @@ RSpec.describe Homebrew::Bundle::Brew do
       context "when the conflicts_with option is provided" do
         before do
           stub_formula_loader formula(formula_name) {
+            T.bind(self, T.class_of(Formula))
             url "mysql-1.0"
             conflicts_with "mysql55"
           }
@@ -631,8 +635,14 @@ RSpec.describe Homebrew::Bundle::Brew do
             requirements: [],
           },
         ])
-        stub_formula_loader formula("foo") { url "foo-1.0" }
-        stub_formula_loader formula("bar") { url "bar-1.0" }
+        stub_formula_loader formula("foo") {
+          T.bind(self, T.class_of(Formula))
+          url "foo-1.0"
+        }
+        stub_formula_loader formula("bar") {
+          T.bind(self, T.class_of(Formula))
+          url "bar-1.0"
+        }
       end
 
       it "returns result" do
