@@ -36,7 +36,7 @@ RSpec.describe Homebrew::DevCmd::Typecheck do
   end
 
   describe "#remove_dead_code" do
-    let(:typecheck) { klass.new([]) }
+    let(:typecheck) { described_class.new([]) }
     let(:spoom_output) do
       <<~OUTPUT
         Candidates:
