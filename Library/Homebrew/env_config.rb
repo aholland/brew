@@ -810,40 +810,6 @@ module Homebrew
       Shellwords.shellsplit(ENV.fetch("HOMEBREW_CASK_OPTS", ""))
     end
 
-    sig { returns(T.nilable(String)) }
-    def cask_opts_binaries
-      ENV["HOMEBREW_CASK_OPTS_BINARIES"].presence
-    end
-
-    sig { returns(T::Boolean) }
-    def cask_opts_binaries?
-      cask_opts.reverse_each do |opt|
-        return true if opt == "--binaries"
-        return false if opt == "--no-binaries"
-      end
-
-      if (env_value = ENV.fetch("HOMEBREW_CASK_OPTS_BINARIES", nil)).present?
-        return FALSY_VALUES.exclude?(env_value.downcase)
-      end
-
-      true
-    end
-
-    sig { returns(T::Boolean) }
-    def cask_opts_quarantine?
-      cask_opts.reverse_each do |opt|
-        return true if opt == "--quarantine"
-        return false if opt == "--no-quarantine"
-      end
-
-      true
-    end
-
-    sig { returns(T.nilable(String)) }
-    def cask_opts_require_sha
-      ENV["HOMEBREW_CASK_OPTS_REQUIRE_SHA"].presence
-    end
-
     sig { returns(T::Boolean) }
     def cask_opts_require_sha?
       cask_opts.include?("--require-sha") ||
@@ -851,17 +817,6 @@ module Homebrew
           env_value = ENV.fetch("HOMEBREW_CASK_OPTS_REQUIRE_SHA", nil)
           env_value.present? && FALSY_VALUES.exclude?(env_value.downcase)
         end
-    end
-
-    sig { returns(T::Boolean) }
-    def bundle_describe?
-      if (env_value = ENV.fetch("HOMEBREW_BUNDLE_NO_DESCRIBE",
-                                nil)).present? && FALSY_VALUES.exclude?(env_value.downcase)
-        return false
-      end
-
-      env_value = ENV.fetch("HOMEBREW_BUNDLE_DESCRIBE", nil)
-      env_value.present? && FALSY_VALUES.exclude?(env_value.downcase)
     end
 
     sig { returns(T.nilable(String)) }
@@ -872,16 +827,6 @@ module Homebrew
 
       ENV["HOMEBREW_BUNDLE_JOBS"].presence ||
         ENVS.fetch(:HOMEBREW_BUNDLE_JOBS).fetch(:default).to_s
-    end
-
-    sig { returns(T::Boolean) }
-    def bundle_no_secrets?
-      if (env_value = ENV.fetch("HOMEBREW_BUNDLE_SECRETS", nil)).present? && FALSY_VALUES.exclude?(env_value.downcase)
-        return false
-      end
-
-      env_value = ENV.fetch("HOMEBREW_BUNDLE_NO_SECRETS", nil)
-      env_value.present? && FALSY_VALUES.exclude?(env_value.downcase)
     end
 
     sig { returns(T::Boolean) }

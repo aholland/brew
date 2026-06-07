@@ -21,8 +21,6 @@ module RuboCop
         extend AutoCorrector
 
         MSG = "Use `Utils.name_from_full_name` instead of splitting formula or cask full names."
-
-        RESTRICT_ON_SEND = [:last, :fetch].freeze
         FULL_NAME_RECEIVER_NAMES = %w[
           cask_full_name
           cask_token
@@ -41,16 +39,6 @@ module RuboCop
           token
         ].freeze
         private_constant :FULL_NAME_RECEIVER_NAMES
-
-        sig { params(node: RuboCop::AST::SendNode).void }
-        def on_send(node)
-          check_full_name_split(node)
-        end
-
-        sig { params(node: RuboCop::AST::SendNode).void }
-        def on_csend(node)
-          check_full_name_split(node)
-        end
 
         private
 

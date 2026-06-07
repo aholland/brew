@@ -52,25 +52,5 @@ module Utils
       FileUtils.rm_f path
       Pathname.new(output)
     end
-
-    sig {
-      params(
-        paths:        T.any(String, Pathname),
-        reproducible: T::Boolean,
-        mtime:        T.any(Integer, Time),
-      ).returns(T::Array[Pathname])
-    }
-    def self.compress(*paths, reproducible: true, mtime: ENV["SOURCE_DATE_EPOCH"].to_i)
-      if reproducible
-        paths.map do |path|
-          compress_with_options(path, mtime:)
-        end
-      else
-        paths.map do |path|
-          safe_system "gzip", path
-          Pathname.new("#{path}.gz")
-        end
-      end
-    end
   end
 end

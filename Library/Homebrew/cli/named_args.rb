@@ -309,11 +309,6 @@ module Homebrew
         end.uniq.freeze, T.nilable(T::Array[Tap]))
       end
 
-      sig { returns(T::Array[String]) }
-      def homebrew_tap_cask_names
-        downcased_unique_named.grep(HOMEBREW_CASK_TAP_CASK_REGEX)
-      end
-
       private
 
       sig { returns(T::Array[String]) }

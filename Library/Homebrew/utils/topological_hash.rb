@@ -55,15 +55,5 @@ module Utils
     end
 
     private
-
-    sig { params(block: T.proc.params(arg0: K).void).void }
-    def tsort_each_node(&block)
-      each_key(&block)
-    end
-
-    sig { params(node: K, block: T.proc.params(arg0: CaskOrFormula).void).returns(V) }
-    def tsort_each_child(node, &block)
-      fetch(node).each(&block)
-    end
   end
 end

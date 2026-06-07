@@ -218,13 +218,6 @@ class Formula
   sig { returns(T.nilable(Pathname)) }
   attr_reader :buildpath
 
-  # The current working directory during tests.
-  # Will only be non-`nil` inside {.test}.
-  #
-  # @api public
-  sig { returns(T.nilable(Pathname)) }
-  attr_reader :testpath
-
   # When installing a bottle (binary package) from a local path this will be
   # set to the full path to the bottle tarball. If not, it will be `nil`.
   sig { returns(T.nilable(Pathname)) }
@@ -502,22 +495,10 @@ class Formula
     alias_path || @unresolved_path
   end
 
-  # The name specified to find this formula.
-  sig { returns(String) }
-  def specified_name
-    alias_name || name
-  end
-
   # The name (including tap) specified to find this formula.
   sig { returns(String) }
   def full_specified_name
     full_alias_name || full_name
-  end
-
-  # The name specified to install this formula.
-  sig { returns(String) }
-  def installed_specified_name
-    installed_alias_name || name
   end
 
   # The name (including tap) specified to install this formula.
@@ -743,16 +724,6 @@ class Formula
     end
 
     formula_names_for_glob("#{sibling_name}.rb")
-  end
-
-  # Returns sibling `-full` or non-`-full` Formula objects for any Formula.
-  sig { returns(T::Array[Formula]) }
-  def full_formulae
-    full_formulae_names.filter_map do |formula_name|
-      Formula[formula_name]
-    rescue FormulaUnavailableError
-      nil
-    end.sort_by(&:version).reverse
   end
 
   sig { returns(T.nilable(String)) }
@@ -1065,14 +1036,6 @@ class Formula
   sig { returns(T::Boolean) }
   def optlinked? = opt_prefix.symlink?
 
-  # If a formula's linked keg points to the prefix.
-  sig { params(version: T.any(String, PkgVersion)).returns(T::Boolean) }
-  def prefix_linked?(version = pkg_version)
-    return false unless linked?
-
-    linked_keg.resolved_path == versioned_prefix(version)
-  end
-
   # {PkgVersion} of the linked keg for the formula.
   sig { returns(T.nilable(PkgVersion)) }
   def linked_version
@@ -1122,14 +1085,6 @@ class Formula
   # @api public
   sig { returns(Pathname) }
   def bin = prefix/"bin"
-
-  # The directory where the formula's documentation should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def doc = share/"doc"/name
 
   # The directory where the formula's headers should be installed.
   # This is symlinked into `HOMEBREW_PREFIX` after installation or with
@@ -1198,86 +1153,6 @@ class Formula
   sig { returns(Pathname) }
   def man = share/"man"
 
-  # The directory where the formula's man1 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # ### Example
-  #
-  # No `make install` available?
-  #
-  # ```ruby
-  # man1.install "example.1"
-  # ```
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man1 = man/"man1"
-
-  # The directory where the formula's man2 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man2 = man/"man2"
-
-  # The directory where the formula's man3 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # ### Example
-  #
-  # No `make install` available?
-  #
-  # ```ruby
-  # man3.install "man.3"
-  # ```
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man3 = man/"man3"
-
-  # The directory where the formula's man4 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man4 = man/"man4"
-
-  # The directory where the formula's man5 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man5 = man/"man5"
-
-  # The directory where the formula's man6 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man6 = man/"man6"
-
-  # The directory where the formula's man7 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man7 = man/"man7"
-
-  # The directory where the formula's man8 pages should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def man8 = man/"man8"
-
   # The directory where the formula's `sbin` binaries should be installed.
   # This is symlinked into `HOMEBREW_PREFIX` after installation or with
   # `brew link` for formulae that are not keg-only.
@@ -1321,56 +1196,6 @@ class Formula
   sig { returns(Pathname) }
   def share = prefix/"share"
 
-  # The directory where the formula's shared files should be installed,
-  # with the name of the formula appended to avoid linking conflicts.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # ### Example
-  #
-  # No `make install` available?
-  #
-  # ```ruby
-  # pkgshare.install "examples"
-  # ```
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def pkgshare = prefix/"share"/name
-
-  # The directory where Emacs Lisp files should be installed, with the
-  # formula name appended to avoid linking conflicts.
-  #
-  # ### Example
-  #
-  # To install an Emacs mode included with a software package:
-  #
-  # ```ruby
-  # elisp.install "contrib/emacs/example-mode.el"
-  # ```
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def elisp = prefix/"share/emacs/site-lisp"/name
-
-  # The directory where the formula's Frameworks should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  # This is not symlinked into `HOMEBREW_PREFIX`.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def frameworks = prefix/"Frameworks"
-
-  # The directory where the formula's kernel extensions should be installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  # This is not symlinked into `HOMEBREW_PREFIX`.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def kext_prefix = prefix/"Library/Extensions"
-
   # The directory where the formula's configuration files should be installed.
   # Anything using `etc.install` will not overwrite other files on e.g. upgrades
   # but will write a new file named `*.default`.
@@ -1397,24 +1222,6 @@ class Formula
   # @api public
   sig { returns(Pathname) }
   def var = HOMEBREW_PREFIX/"var"
-
-  # The directory where the formula's `zsh` function files should be
-  # installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def zsh_function = share/"zsh/site-functions"
-
-  # The directory where the formula's `fish` function files should be
-  # installed.
-  # This is symlinked into `HOMEBREW_PREFIX` after installation or with
-  # `brew link` for formulae that are not keg-only.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def fish_function = share/"fish/vendor_functions.d"
 
   # The directory where the formula's `bash` completion files should be
   # installed.
@@ -1567,18 +1374,6 @@ class Formula
   # @api public
   sig { returns(Pathname) }
   def opt_share = opt_prefix/"share"
-
-  # Same as {#pkgshare}, but relative to {#opt_prefix} instead of {#prefix}.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def opt_pkgshare = opt_prefix/"share"/name
-
-  # Same as {#elisp}, but relative to {#opt_prefix} instead of {#prefix}.
-  #
-  # @api public
-  sig { returns(Pathname) }
-  def opt_elisp = opt_prefix/"share/emacs/site-lisp"/name
 
   # Same as {#frameworks}, but relative to {#opt_prefix} instead of {#prefix}.
   #
@@ -1852,12 +1647,6 @@ class Formula
   # @return [Hash<Symbol, Object>]
   # @api private
   delegate disable_args: :"self.class"
-
-  sig { returns(T::Boolean) }
-  def skip_cxxstdlib_check?
-    odisabled "`Formula#skip_cxxstdlib_check?`"
-    false
-  end
 
   # Applies all patches in the {.patchlist} to the source tree.
   #
@@ -2196,20 +1985,6 @@ class Formula
     ["--prefix=#{prefix}", "--libdir=#{lib}", "--buildtype=release", "--wrap-mode=nofallback"]
   end
 
-  # Standard parameters for npm builds.
-  #
-  # @param prefix [String, Pathname, false] installation prefix (default: libexec)
-  # @param ignore_scripts [Boolean] whether to add --ignore-scripts flag (default: true)
-  # @api public
-  sig { params(prefix: T.any(String, Pathname, FalseClass), ignore_scripts: T::Boolean).returns(T::Array[String]) }
-  def std_npm_args(prefix: libexec, ignore_scripts: true)
-    require "language/node"
-
-    return Language::Node.std_npm_install_args(Pathname(prefix), ignore_scripts:) if prefix
-
-    Language::Node.local_npm_install_args(ignore_scripts:)
-  end
-
   # Standard parameters for pip builds.
   #
   # @api public
@@ -2248,35 +2023,6 @@ class Formula
       "-Doptimize=Release#{release_mode_capitalized}",
       "--summary", "all"
     ]
-  end
-
-  # Shared library names according to platform conventions.
-  #
-  # Optionally specify a `version` to restrict the shared library to a specific
-  # version. The special string "*" matches any version.
-  #
-  # If `name` is specified as "*", match any shared library of any version.
-  #
-  # ### Example
-  #
-  # ```ruby
-  # shared_library("foo")      #=> foo.dylib
-  # shared_library("foo", 1)   #=> foo.1.dylib
-  # shared_library("foo", "*") #=> foo.2.dylib, foo.1.dylib, foo.dylib
-  # shared_library("*")        #=> foo.dylib, bar.dylib
-  # ```
-  #
-  # @api public
-  sig { params(name: String, version: T.nilable(T.any(String, Integer))).returns(String) }
-  def shared_library(name, version = nil)
-    return "*.dylib" if name == "*" && (version.blank? || version == "*")
-
-    infix = if version == "*"
-      "{,.*}"
-    elsif version.present?
-      ".#{version}"
-    end
-    "#{name}#{infix}.dylib"
   end
 
   # Executable/Library RPATH according to platform conventions.
@@ -2320,30 +2066,6 @@ class Formula
     end
   end
 
-  # Replaces a universal binary with its native slice.
-  #
-  # If called with no parameters, does this with all compatible
-  # universal binaries in a {Formula}'s {Keg}.
-  #
-  # Raises an error if no universal binaries are found to deuniversalize.
-  #
-  # @api public
-  sig { params(targets: T.nilable(T.any(Pathname, String))).void }
-  def deuniversalize_machos(*targets)
-    if targets.none?
-      targets = any_installed_keg&.mach_o_files&.select do |file|
-        file.arch == :universal && file.archs.include?(Hardware::CPU.arch)
-      end
-    end
-
-    raise "No universal binaries found to deuniversalize" if targets.blank?
-
-    targets.compact.each do |target|
-      target = MachOPathname.wrap(target)
-      extract_macho_slice_from(target, Hardware::CPU.arch)
-    end
-  end
-
   sig { params(file: MachOShim, arch: T.nilable(Symbol)).void }
   def extract_macho_slice_from(file, arch = Hardware::CPU.arch)
     odebug "Extracting #{arch} slice from #{file}"
@@ -2361,176 +2083,6 @@ class Formula
     end
   end
   private :extract_macho_slice_from
-
-  # Generate shell completions for a formula for `bash`, `zsh`, `fish`, and
-  # optionally `pwsh` using the formula's executable.
-  #
-  # ### Examples
-  #
-  # Using default values for optional arguments.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions")
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo", "completions", "bash")
-  # (zsh_completion/"_foo").write Utils.safe_popen_read({ "SHELL" => "zsh" }, bin/"foo", "completions", "zsh")
-  # (fish_completion/"foo.fish").write Utils.safe_popen_read({ "SHELL" => "fish" }, bin/"foo",
-  #                                                          "completions", "fish")
-  # ```
-  #
-  # If your executable can generate completions for PowerShell,
-  # you must pass ":pwsh" explicitly along with any other supported shells.
-  # This will pass "powershell" as the completion argument.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions", shells: [:bash, :pwsh])
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo", "completions", "bash")
-  # (pwsh_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "pwsh" }, bin/"foo",
-  #                                                           "completions", "powershell")
-  # ```
-  #
-  # Selecting shells and using a different `base_name`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions", shells: [:bash, :zsh], base_name: "bar")
-  #
-  # # translates to
-  # (bash_completion/"bar").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo", "completions", "bash")
-  # (zsh_completion/"_bar").write Utils.safe_popen_read({ "SHELL" => "zsh" }, bin/"foo", "completions", "zsh")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :arg`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions", shell_parameter_format: :arg, shells: [:bash])
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo",
-  #                                                     "completions", "--shell=bash")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :clap`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", shell_parameter_format: :clap, shells: [:zsh])
-  #
-  # # translates to
-  # (zsh_completion/"_foo").write Utils.safe_popen_read({ "SHELL" => "zsh", "COMPLETE" => "zsh" }, bin/"foo")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :click`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", shell_parameter_format: :click, shells: [:zsh])
-  #
-  # # translates to
-  # (zsh_completion/"_foo").write Utils.safe_popen_read({ "SHELL" => "zsh", "_FOO_COMPLETE" => "zsh_source" },
-  #                                                     bin/"foo")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :cobra`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", shell_parameter_format: :cobra, shells: [:bash])
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo", "completion", "bash")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :flag`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions", shell_parameter_format: :flag, shells: [:bash])
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo", "completions", "--bash")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :none`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions", shell_parameter_format: :none, shells: [:bash])
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo", "completions")
-  # ```
-  #
-  # Using predefined `shell_parameter_format :typer`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", shell_parameter_format: :typer, shells: [:zsh])
-  #
-  # # translates to
-  # (zsh_completion/"_foo").write Utils.safe_popen_read(
-  #   { "SHELL" => "zsh", "_TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION" => "1" },
-  #   bin/"foo", "--show-completion", "zsh"
-  # )
-  # ```
-  #
-  # Using custom `shell_parameter_format`.
-  #
-  # ```ruby
-  # generate_completions_from_executable(bin/"foo", "completions", shell_parameter_format: "--selected-shell=",
-  #                                      shells: [:bash])
-  #
-  # # translates to
-  # (bash_completion/"foo").write Utils.safe_popen_read({ "SHELL" => "bash" }, bin/"foo",
-  #                                                     "completions", "--selected-shell=bash")
-  # ```
-  #
-  # @api public
-  # @param commands
-  #   the path to the executable and any passed subcommand(s) to use for generating the completion scripts.
-  # @param base_name
-  #   the base name of the generated completion script. Defaults to the name of the executable if installed
-  #   within formula's bin or sbin. Otherwise falls back to the formula name.
-  # @param shell_parameter_format
-  #   specify how `shells` should each be passed to the `executable`. Takes either a String representing a
-  #   prefix, or one of `[:arg, :clap, :click, :cobra, :flag, :none, :typer]`.
-  #   Defaults to plainly passing the shell.
-  # @param shells
-  #   the shells to generate completion scripts for. Defaults to `[:bash, :zsh, :fish]`.
-  sig {
-    params(
-      commands:               T.any(Pathname, String),
-      base_name:              T.nilable(String),
-      shell_parameter_format: T.nilable(T.any(Symbol, String)),
-      shells:                 T::Array[Symbol],
-    ).void
-  }
-  def generate_completions_from_executable(*commands,
-                                           base_name: nil,
-                                           shell_parameter_format: nil,
-                                           shells: Utils::ShellCompletion.default_completion_shells(shell_parameter_format))
-    executable = commands.first.to_s
-    base_name ||= File.basename(executable) if executable.start_with?(bin.to_s, sbin.to_s)
-    base_name ||= name
-
-    completion_script_path_map = {
-      bash: bash_completion/base_name,
-      zsh:  zsh_completion/"_#{base_name}",
-      fish: fish_completion/"#{base_name}.fish",
-      pwsh: pwsh_completion/"_#{base_name}.ps1",
-    }
-
-    shells.each do |shell|
-      popen_read_env = { "SHELL" => shell.to_s }
-      script_path = completion_script_path_map[shell]
-
-      shell_parameter = Utils::ShellCompletion.completion_shell_parameter(
-        shell_parameter_format,
-        shell,
-        executable,
-        popen_read_env,
-      )
-
-      script_path.dirname.mkpath
-      script_path.write Utils::ShellCompletion.generate_completion_output(commands, shell_parameter, popen_read_env)
-    end
-  end
 
   # An array of all core {Formula} names.
   sig { returns(T::Array[String]) }
@@ -2620,12 +2172,6 @@ class Formula
     return [] if alias_path.nil?
 
     installed.select { |f| f.installed_alias_path == alias_path }
-  end
-
-  # An array of all alias files of core {Formula}e.
-  sig { returns(T::Array[Pathname]) }
-  def self.core_alias_files
-    CoreTap.instance.alias_files
   end
 
   # An array of all core aliases.
@@ -3241,25 +2787,6 @@ class Formula
     hash
   end
 
-  sig { params(spec_symbol: Symbol).returns(T.nilable(T::Hash[String, T.untyped])) }
-  def internal_dependencies_hash(spec_symbol)
-    raise ArgumentError, "Unsupported spec: #{spec_symbol}" unless [:stable, :head].include?(spec_symbol)
-    return unless (spec = public_send(spec_symbol))
-
-    spec.declared_deps.each_with_object({}) do |dep, dep_hash|
-      # Implicit dependencies are only needed when installing from source
-      # since they are only used to download and unpack source files.
-      # @see DependencyCollector
-      next if dep.implicit?
-
-      metadata_hash = {}
-      metadata_hash[:tags] = dep.tags if dep.tags.present?
-      metadata_hash[:uses_from_macos] = dep.bounds.presence if dep.uses_from_macos?
-
-      dep_hash[dep.name] = metadata_hash.presence
-    end
-  end
-
   sig { returns(T.nilable(T::Boolean)) }
   def on_system_blocks_exist?
     self.class.on_system_blocks_exist? || @on_system_blocks_exist
@@ -3323,11 +2850,6 @@ class Formula
     returns(BasicObject)
   }
   def test; end
-
-  sig { params(file: T.any(Pathname, String)).returns(Pathname) }
-  def test_fixtures(file)
-    HOMEBREW_LIBRARY_PATH/"test/support/fixtures"/file
-  end
 
   # This method is overridden in {Formula} subclasses to provide the
   # installation instructions. The sources (from {.url}) are downloaded,
@@ -3655,18 +3177,6 @@ class Formula
     FileUtils.chdir(name, &block)
   end
 
-  # Runs `xcodebuild` without Homebrew's compiler environment variables set.
-  sig { params(args: T.any(String, Integer, Pathname, Symbol)).void }
-  def xcodebuild(*args)
-    removed = ENV.remove_cc_etc
-
-    begin
-      self.system("xcodebuild", *args)
-    ensure
-      ENV.update(removed)
-    end
-  end
-
   sig { params(download_queue: Homebrew::DownloadQueue).void }
   def enqueue_resources_and_patches(download_queue:)
     resources.each do |resource|
@@ -3934,70 +3444,6 @@ class Formula
         @licenses
       else
         @licenses = T.let(args, T.nilable(SPDX::LicenseExpression))
-      end
-    end
-
-    # The phases for which network access is allowed. By default, network
-    # access is allowed for all phases. Valid phases are `:build`, `:test`,
-    # and `:postinstall`. When no argument is passed, network access will be
-    # allowed for all phases.
-    #
-    # ### Examples
-    #
-    # ```ruby
-    # allow_network_access!
-    # ```
-    #
-    # ```ruby
-    # allow_network_access! :build
-    # ```
-    #
-    # ```ruby
-    # allow_network_access! [:build, :test]
-    # ```
-    sig { params(phases: T.any(Symbol, T::Array[Symbol])).void }
-    def allow_network_access!(phases = [])
-      phases_array = Array(phases)
-      if phases_array.empty?
-        network_access_allowed.each_key { |phase| network_access_allowed[phase] = true }
-      else
-        phases_array.each do |phase|
-          raise ArgumentError, "Unknown phase: #{phase}" unless SUPPORTED_NETWORK_ACCESS_PHASES.include?(phase)
-
-          network_access_allowed[phase] = true
-        end
-      end
-    end
-
-    # The phases for which network access is denied. By default, network
-    # access is allowed for all phases. Valid phases are `:build`, `:test`,
-    # and `:postinstall`. When no argument is passed, network access will be
-    # denied for all phases.
-    #
-    # ### Examples
-    #
-    # ```ruby
-    # deny_network_access!
-    # ```
-    #
-    # ```ruby
-    # deny_network_access! :build
-    # ```
-    #
-    # ```ruby
-    # deny_network_access! [:build, :test]
-    # ```
-    sig { params(phases: T.any(Symbol, T::Array[Symbol])).void }
-    def deny_network_access!(phases = [])
-      phases_array = Array(phases)
-      if phases_array.empty?
-        network_access_allowed.each_key { |phase| network_access_allowed[phase] = false }
-      else
-        phases_array.each do |phase|
-          raise ArgumentError, "Unknown phase: #{phase}" unless SUPPORTED_NETWORK_ACCESS_PHASES.include?(phase)
-
-          network_access_allowed[phase] = false
-        end
       end
     end
 
@@ -4340,50 +3786,6 @@ class Formula
       end
     end
 
-    # Adds information about PyPI formula mapping as {PypiPackages} object.
-    # It provides a way to specify package name in PyPI repository,
-    # define extra packages, or remove them (e.g. if formula installs them as a dependency).
-    #
-    # Examples of usage:
-    # ```rb
-    # # It will use information about the PyPI package `foo` to update resources
-    # pypi_packages package_name: "foo"
-    #
-    # Add "extra" packages and remove unneeded ones
-    # depends_on "numpy"
-    #
-    # pypi_packages extra_packages: "setuptools", exclude_packages: "numpy"
-    #
-    # # Special case: empty `package_name` allows to skip resource updates for non-extra packages
-    # pypi_packages package_name: "", extra_packages: "setuptools"
-    # ```
-    sig {
-      params(
-        package_name:     T.nilable(String),
-        extra_packages:   T.nilable(T.any(String, T::Array[String])),
-        exclude_packages: T.nilable(T.any(String, T::Array[String])),
-        dependencies:     T.nilable(T.any(String, T::Array[String])),
-      ).void
-    }
-    def pypi_packages(
-      package_name: nil,
-      extra_packages: nil,
-      exclude_packages: nil,
-      dependencies: nil
-    )
-      if [package_name, extra_packages, exclude_packages, dependencies].all?(&:nil?)
-        raise ArgumentError, "must provide at least one argument"
-      end
-
-      # Sadly `v1, v2, v3 = [v1, v2, v3].map { |x| Array(x) }` does not work
-      # for typechecker
-      extra_packages = Array(extra_packages)
-      exclude_packages = Array(exclude_packages)
-      dependencies = Array(dependencies)
-
-      @pypi_packages_info = PypiPackages.new(package_name:, extra_packages:, exclude_packages:, dependencies:)
-    end
-
     # Additional downloads can be defined as {resource}s and accessed in the
     # install method. Resources can also be defined inside a {.stable} or
     # {.head} block. This mechanism replaces ad-hoc "subformula" classes.
@@ -4607,52 +4009,6 @@ class Formula
       names.each { |name| T.must(conflicts) << FormulaConflict.new(name, opts[:because]) }
     end
 
-    # Skip cleaning paths in a formula.
-    #
-    # Sometimes the formula {Cleaner cleaner} breaks things.
-    #
-    # ### Examples
-    #
-    # Preserve cleaned paths with:
-    #
-    # ```ruby
-    # skip_clean "bin/foo", "lib/bar"
-    # ```
-    #
-    # Keep .la files with:
-    #
-    # ```ruby
-    # skip_clean :la
-    # ```
-    #
-    # @api public
-    sig { params(paths: T.any(String, Symbol)).returns(T::Set[T.any(String, Symbol)]) }
-    def skip_clean(*paths)
-      paths.flatten!
-      # Specifying :all is deprecated and will become an error
-      T.must(skip_clean_paths).merge(paths)
-    end
-
-    # Preserve `@rpath` install names when fixing dynamic linkage on macOS.
-    #
-    # By default, Homebrew rewrites library install names (including those starting
-    # with `@rpath`) to use absolute paths. This can break tools like `macdeployqt`
-    # that expect `@rpath`-based install names to remain unchanged.
-    #
-    # Call this method to skip rewriting install names that start with `@rpath`.
-    #
-    # ### Example
-    #
-    # ```ruby
-    # preserve_rpath
-    # ```
-    #
-    # @api public
-    sig { params(value: T::Boolean).returns(T::Boolean) }
-    def preserve_rpath(value: true)
-      @preserve_rpath = value
-    end
-
     # Check if `@rpath` install names should be preserved.
     #
     # @api internal
@@ -4690,15 +4046,6 @@ class Formula
       @keg_only_reason = T.let(KegOnlyReason.new(reason, explanation), T.nilable(KegOnlyReason))
     end
 
-    # Pass `:skip` to this method to disable post-install stdlib checking.
-    #
-    # @api public
-    sig { params(check_type: Symbol).void }
-    def cxxstdlib_check(check_type)
-      odisabled "`cxxstdlib_check :skip`"
-      define_method(:skip_cxxstdlib_check?) { true } if check_type == :skip
-    end
-
     # Marks the {Formula} as failing with a particular compiler so it will fall back to others.
     #
     # ### Examples
@@ -4733,22 +4080,6 @@ class Formula
     sig { params(compiler: T.any(Symbol, T::Hash[Symbol, String]), block: T.nilable(T.proc.void)).void }
     def fails_with(compiler, &block)
       specs.each { |spec| spec.fails_with(compiler, &block) }
-    end
-
-    # Used to mark the {Formula} as needing a certain standard, so Homebrew
-    # would fall back to other compilers if the default compiler
-    # did not implement that standard.
-    #
-    # This is now a no-op as we prefer to {.depends_on} a desired compiler
-    # and explicitly use that compiler in a formula's {#install} block,
-    # rather than implicitly finding a suitable compiler with `needs`.
-    #
-    # @see .fails_with
-    #
-    # @api public
-    sig { params(_standards: Symbol).void }
-    def needs(*_standards)
-      odisabled "`needs :openmp`", '`depends_on "gcc"`'
     end
 
     # A test is required for new formulae and makes us happy.

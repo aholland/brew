@@ -26,21 +26,6 @@ module RuboCop
         prop :body_node, RuboCop::AST::Node
       end
 
-      # This method is called by RuboCop and is the main entry point.
-      sig { params(node: RuboCop::AST::ClassNode).void }
-      def on_class(node)
-        @file_path = T.let(processed_source.file_path, T.nilable(String))
-        return unless file_path_allowed?
-        return unless formula_class?(node)
-
-        class_node, parent_class_node, body = *node
-        @body = T.let(body, T.nilable(RuboCop::AST::Node))
-
-        @formula_name = T.let(Pathname.new(@file_path).basename(".rb").to_s, T.nilable(String))
-        @tap_style_exceptions = T.let(nil, T.nilable(T::Hash[Symbol, T::Array[String]]))
-        audit_formula(FormulaNodes.new(node:, class_node:, parent_class_node:, body_node: T.must(@body)))
-      end
-
       sig { abstract.params(formula_nodes: FormulaNodes).void }
       def audit_formula(formula_nodes); end
 

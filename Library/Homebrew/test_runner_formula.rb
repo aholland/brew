@@ -24,18 +24,8 @@ class TestRunnerFormula
   end
 
   sig { returns(T::Boolean) }
-  def macos_only?
-    !linux_compatible?
-  end
-
-  sig { returns(T::Boolean) }
   def macos_compatible?
     formula.supports_macos?
-  end
-
-  sig { returns(T::Boolean) }
-  def linux_only?
-    !macos_compatible?
   end
 
   sig { returns(T::Boolean) }
@@ -49,18 +39,8 @@ class TestRunnerFormula
   end
 
   sig { returns(T::Boolean) }
-  def x86_64_compatible?
-    !arm64_only?
-  end
-
-  sig { returns(T::Boolean) }
   def arm64_only?
     formula.requirements.any? { |r| r.is_a?(ArchRequirement) && (r.arch == :arm64) }
-  end
-
-  sig { returns(T::Boolean) }
-  def arm64_compatible?
-    !x86_64_only?
   end
 
   sig { returns(T.nilable(MacOSRequirement)) }

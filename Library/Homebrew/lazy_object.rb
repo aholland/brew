@@ -22,13 +22,6 @@ class LazyObject < Delegator
     @__getobj__
   end
 
-  sig { params(callable: T.nilable(Proc)).void }
-  def __setobj__(callable)
-    @__callable__ = callable
-    @getobj_set = false
-    @__getobj__ = nil
-  end
-
   # Forward to the inner object to make lazy objects type-checkable.
   #
   # @!visibility private

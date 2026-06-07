@@ -80,24 +80,6 @@ module Stdenv
     ).existing
   end
 
-  # Removes the MAKEFLAGS environment variable, causing make to use a single job.
-  # This is useful for makefiles with race conditions.
-  # When passed a block, MAKEFLAGS is removed only for the duration of the block and is restored after its completion.
-  sig { params(block: T.proc.returns(T.untyped)).returns(T.untyped) }
-  def deparallelize(&block)
-    old = self["MAKEFLAGS"]
-    remove "MAKEFLAGS", /-j\d+/
-    if block
-      begin
-        yield
-      ensure
-        self["MAKEFLAGS"] = old
-      end
-    end
-
-    old
-  end
-
   %w[O1 O0].each do |opt|
     define_method opt do
       send(:remove_from_cflags, /-O./)
@@ -142,12 +124,6 @@ module Stdenv
       map[:nehalem] = "-march=nehalem -Xclang -target-feature -Xclang -aes"
     end
     set_cpu_cflags(map)
-  end
-
-  sig { void }
-  def cxx11
-    append "CXX", "-std=c++11"
-    libcxx
   end
 
   sig { void }

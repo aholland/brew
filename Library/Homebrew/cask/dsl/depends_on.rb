@@ -123,14 +123,6 @@ module Cask
         @maximum_macos = maximum_macos
       end
 
-      sig { params(args: T.any(String, Symbol)).returns(T.nilable(LinuxRequirement)) }
-      def linux=(*args)
-        raise "Only a single 'depends_on linux' is allowed." if @linux
-        raise "invalid 'depends_on linux' value: #{args.first.inspect}" if args.first != :any
-
-        @linux = LinuxRequirement.new
-      end
-
       sig { params(args: Symbol).returns(T::Array[T::Hash[Symbol, T.any(Symbol, Integer)]]) }
       def arch=(*args)
         @arch ||= []

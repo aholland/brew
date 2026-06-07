@@ -265,9 +265,6 @@ module Cask
     sig { returns(T::Boolean) }
     def on_system_blocks_exist? = @on_system_blocks_exist
 
-    sig { returns(T::Boolean) }
-    def on_os_blocks_exist? = @on_os_blocks_exist
-
     # Specifies the cask's name.
     #
     # NOTE: Multiple names can be specified.

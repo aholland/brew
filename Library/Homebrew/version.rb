@@ -686,17 +686,6 @@ class Version
     major_minor.empty? ? NULL : self.class.new(major_minor.join("."))
   end
 
-  # The major, minor and patch version.
-  #
-  # @api public
-  sig { returns(T.self_type) }
-  def major_minor_patch
-    return self if null?
-
-    major_minor_patch = T.must(tokens[0..2])
-    major_minor_patch.empty? ? NULL : self.class.new(major_minor_patch.join("."))
-  end
-
   sig { returns(Integer) }
   def hash
     version.hash

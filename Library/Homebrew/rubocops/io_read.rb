@@ -8,16 +8,6 @@ module RuboCop
       class IORead < Base
         MSG = "The use of `IO.%<method>s` is a security risk."
 
-        RESTRICT_ON_SEND = [:read, :readlines].freeze
-
-        sig { params(node: RuboCop::AST::SendNode).void }
-        def on_send(node)
-          return if node.receiver != s(:const, nil, :IO)
-          return if safe?(node.arguments.first)
-
-          add_offense(node, message: format(MSG, method: node.method_name))
-        end
-
         private
 
         sig { params(node: RuboCop::AST::Node).returns(T::Boolean) }

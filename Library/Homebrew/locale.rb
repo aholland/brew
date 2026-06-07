@@ -20,8 +20,6 @@ class Locale
   # ISO 3166-1 or UN M.49
   REGION_REGEX = /(?:[A-Z]{2}|\d{3})/
   private_constant :REGION_REGEX
-
-  LOCALE_REGEX = /\A((?:#{LANGUAGE_REGEX}|#{REGION_REGEX}|#{SCRIPT_REGEX})(?:-|$)){1,3}\Z/
   private_constant :LOCALE_REGEX
 
   sig { params(string: String).returns(T.attached_class) }
@@ -61,9 +59,6 @@ class Locale
 
   sig { returns(T.nilable(String)) }
   attr_reader :script
-
-  sig { returns(T.nilable(String)) }
-  attr_reader :region
 
   sig { params(language: T.nilable(String), script: T.nilable(String), region: T.nilable(String)).void }
   def initialize(language, script, region)

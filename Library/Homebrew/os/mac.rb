@@ -50,12 +50,6 @@ module OS
       end
     end
 
-    sig { params(version: String).void }
-    def self.full_version=(version)
-      @full_version = MacOSVersion.new(version.chomp)
-      @version = nil
-    end
-
     sig { returns(::Version) }
     def self.latest_sdk_version
       # TODO: bump version when new Xcode macOS SDK is released
@@ -100,12 +94,6 @@ module OS
         Utils.popen_read("/usr/bin/xcode-select", "-print-path").strip,
         T.nilable(String),
       )
-    end
-
-    sig { returns(T::Boolean) }
-    def self.sdk_root_needed?
-      odisabled "OS::Mac.sdk_root_needed?"
-      true
     end
 
     sig { returns(T.any(CLTSDKLocator, XcodeSDKLocator)) }
@@ -162,18 +150,6 @@ module OS
     def self.sdk_path(version = nil)
       s = sdk(version)
       s&.path
-    end
-
-    # Prefer CLT SDK when both Xcode and the CLT are installed.
-    # Expected results:
-    # 1. On Xcode-only systems, return the Xcode SDK.
-    # 2. On CLT-only systems, return the CLT SDK.
-    #
-    # @api public
-    sig { params(version: T.nilable(MacOSVersion)).returns(T.nilable(::Pathname)) }
-    def self.sdk_path_if_needed(version = nil)
-      # odeprecated "MacOS.sdk_path_if_needed", "MacOS.sdk_path"
-      sdk_path(version)
     end
 
     sig { params(ids: String).returns(T.nilable(::Pathname)) }

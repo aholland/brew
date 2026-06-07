@@ -26,19 +26,6 @@ module RuboCop
 
         PARTIAL_METADATA_MSG = "`on_upgrade` lists %<symbols>s without matching `uninstall` directives"
 
-        sig { params(node: AST::SendNode).void }
-        def on_send(node)
-          return unless [:zap, :uninstall].include?(node.method_name)
-
-          hash_node = node.arguments.first
-          return if hash_node.nil? || (!hash_node.is_a?(AST::Node) && !hash_node.hash_type?)
-
-          comments = processed_source.comments
-
-          check_ordering(hash_node, comments)
-          check_metadata(hash_node, comments)
-        end
-
         private
 
         sig {

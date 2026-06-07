@@ -30,31 +30,6 @@ module RuboCop
         # (`bar || foo.empty?`) will blow up when checking
         # `(send (:nil) :== $_)`.
         def_node_matcher :nil_or_empty?, <<~PATTERN
-          (or
-              {
-                (send $_ :!)
-                (send $_ :nil?)
-                (send $_ :== nil)
-                (send nil :== $_)
-              }
-              {
-                (send $_ :empty?)
-                (send (send (send $_ :empty?) :!) :!)
-              }
-          )
-        PATTERN
-
-        sig { params(node: RuboCop::AST::Node).void }
-        def on_or(node)
-          nil_or_empty?(node) do |var1, var2|
-            return if var1 != var2
-
-            message = format(MSG, prefer: replacement(var1), current: node.source)
-            add_offense(node, message:) do |corrector|
-              autocorrect(corrector, node)
-            end
-          end
-        end
 
         private
 

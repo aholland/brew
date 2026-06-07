@@ -7,18 +7,6 @@ module RuboCop
     class DisableComment < Base
       MSG = "Add a clarifying comment to the RuboCop disable comment"
 
-      sig { void }
-      def on_new_investigation
-        super
-
-        processed_source.comments.each do |comment|
-          next unless disable_comment?(comment)
-          next if comment?(processed_source[comment.loc.line - 2])
-
-          add_offense(comment)
-        end
-      end
-
       private
 
       sig { params(comment: Parser::Source::Comment).returns(T::Boolean) }

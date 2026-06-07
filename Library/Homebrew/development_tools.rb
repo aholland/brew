@@ -92,23 +92,6 @@ class DevelopmentTools
       )
     end
 
-    # Get the LLVM Clang build version.
-    #
-    # @api public
-    sig { returns(Version) }
-    def llvm_clang_build_version
-      @llvm_clang_build_version ||= T.let(begin
-        path = Formulary.factory("llvm").opt_prefix/"bin/clang"
-        if path.executable? && (build_version = `#{path} --version`[/clang version (\d+\.\d\.\d)/, 1])
-          Version.new(build_version)
-        else
-          Version::NULL
-        end
-      rescue FormulaUnavailableError
-        Version::NULL
-      end, T.nilable(Version))
-    end
-
     sig { returns(Pathname) }
     def host_gcc_path
       Pathname.new("/usr/bin/gcc")
@@ -130,12 +113,6 @@ class DevelopmentTools
         end
         @gcc_version[cc] = version
       end
-    end
-
-    sig { void }
-    def clear_version_cache
-      @clang_version = @clang_build_version = T.let(nil, T.nilable(Version))
-      @gcc_version = T.let({}, T.nilable(T::Hash[String, Version]))
     end
 
     sig { returns(T::Boolean) }
