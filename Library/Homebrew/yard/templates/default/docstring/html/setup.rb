@@ -14,4 +14,10 @@ def init
 
   sections[:index].place(:internal).before(:private)
 end
+
+sig { returns(T.nilable(String)) }
+def internal
+  T.bind(self, YARD::Templates::Template, checked: false)
+  erb(:internal) if object.has_tag?(:api) && object.tag(:api).text == "internal"
+end
 # rubocop:enable Style/TopLevelMethodDefinition
