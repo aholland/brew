@@ -24,6 +24,42 @@ module RuboCop
         MSG = "Use `%<prefer>s` instead of `%<current>s`."
 
         def_node_matcher :exists_and_not_empty?, <<~PATTERN
+          (and
+              {
+                (send (send $_ :nil?) :!)
+                (send (send $_ :!) :!)
+                (send $_ :!= nil)
+                $_
+              }
+              {
+                (send (send $_ :empty?) :!)
+              }
+          )
+        PATTERN
+
+        sig { params(node: RuboCop::AST::AndNode).void }
+        def on_and(node)
+          exists_and_not_empty?(node) do |var1, var2|
+            return if var1 != var2
+
+            message = format(MSG, prefer: replacement(var1), current: node.source)
+
+            add_offense(node, message:) do |corrector|
+              autocorrect(corrector, node)
+            end
+          end
+        end
+
+        sig { params(node: RuboCop::AST::OrNode).void }
+        def on_or(node)
+          exists_and_not_empty?(node) do |var1, var2|
+            return if var1 != var2
+
+            add_offense(node, message: MSG) do |corrector|
+              autocorrect(corrector, node)
+            end
+          end
+        end
 
         sig { params(corrector: RuboCop::Cop::Corrector, node: RuboCop::AST::Node).void }
         def autocorrect(corrector, node)

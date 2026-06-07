@@ -77,6 +77,26 @@ module RuboCop
         # `subject` that overrides a `let` of the same name) are never flagged.
         # @!method definition_name(node)
         def_node_matcher :definition_name, <<~PATTERN
+          (any_block (send nil? {#{DEFINITION_METHODS.map { |method| ":#{method}" }.join(" ")}} (sym $_) ...) ...)
+        PATTERN
+
+        sig { params(node: RuboCop::AST::SendNode).void }
+        def on_send(node)
+          return unless node.receiver.nil?
+
+          name_argument = node.first_argument
+          return unless name_argument&.sym_type?
+
+          block = node.block_node
+          return unless block
+
+          name = name_argument.value
+          return if exempt_from_deletion?(name, block)
+
+          add_offense(node.loc.selector, message: format(MSG, name:)) do |corrector|
+            corrector.remove(removal_range(block))
+          end
+        end
 
         private
 

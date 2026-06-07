@@ -57,6 +57,21 @@ module RuboCop
         PATTERN
 
         def_node_matcher :reject_with_block_pass?, <<~PATTERN
+          (send _ {:reject :delete_if :reject!}
+            (block_pass
+              (sym :blank?)))
+        PATTERN
+
+        sig { params(node: RuboCop::AST::SendNode).void }
+        def on_send(node)
+          return unless bad_method?(node)
+
+          range = offense_range(node)
+          preferred_method = preferred_method(node)
+          add_offense(range, message: format(MSG, preferred_method:)) do |corrector|
+            corrector.replace(range, preferred_method)
+          end
+        end
 
         private
 

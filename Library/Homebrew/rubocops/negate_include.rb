@@ -29,6 +29,17 @@ module RuboCop
         RESTRICT_ON_SEND = [:!].freeze
 
         def_node_matcher :negate_include_call?, <<~PATTERN
+          (send (send $!nil? :include? $_) :!)
+        PATTERN
+
+        sig { params(node: RuboCop::AST::SendNode).void }
+        def on_send(node)
+          return unless (receiver, obj = negate_include_call?(node))
+
+          add_offense(node) do |corrector|
+            corrector.replace(node, "#{receiver.source}.exclude?(#{obj.source})")
+          end
+        end
       end
     end
   end

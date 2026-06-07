@@ -33,6 +33,17 @@ module RuboCop
         MSG = "Avoid calling `blank?` with the safe navigation operator in conditionals."
 
         def_node_matcher :safe_navigation_blank_in_conditional?, <<~PATTERN
+          (if $(csend ... :blank?) ...)
+        PATTERN
+
+        sig { params(node: RuboCop::AST::IfNode).void }
+        def on_if(node)
+          return unless safe_navigation_blank_in_conditional?(node)
+
+          add_offense(node) do |corrector|
+            corrector.replace(safe_navigation_blank_in_conditional?(node).location.dot, ".")
+          end
+        end
       end
     end
   end

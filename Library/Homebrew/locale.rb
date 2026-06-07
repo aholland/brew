@@ -20,7 +20,6 @@ class Locale
   # ISO 3166-1 or UN M.49
   REGION_REGEX = /(?:[A-Z]{2}|\d{3})/
   private_constant :REGION_REGEX
-  private_constant :LOCALE_REGEX
 
   sig { params(string: String).returns(T.attached_class) }
   def self.parse(string)

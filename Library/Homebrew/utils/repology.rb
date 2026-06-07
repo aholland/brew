@@ -10,7 +10,6 @@ module Repology
 
   HOMEBREW_CORE = "homebrew"
   HOMEBREW_CASK = "homebrew_casks"
-  private_constant :MAX_PAGINATION
 
   sig { params(last_package_in_response: T.nilable(String), repository: String).returns(T::Hash[String, T.untyped]) }
   def self.query_api(last_package_in_response = "", repository:)

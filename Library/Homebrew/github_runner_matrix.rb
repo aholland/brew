@@ -15,8 +15,6 @@ class GitHubRunnerMatrix
 
   RunnerSpec = T.type_alias { T.any(LinuxRunnerSpec, MacOSRunnerSpec) }
   private_constant :RunnerSpec
-  private_constant :MacOSRunnerSpecHash
-  private_constant :LinuxRunnerSpecHash
 
   RunnerSpecHash = T.type_alias { T::Hash[Symbol, T.untyped] }
   private_constant :RunnerSpecHash

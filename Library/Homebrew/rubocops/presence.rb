@@ -64,6 +64,36 @@ module RuboCop
         PATTERN
 
         def_node_matcher :redundant_negative_receiver_and_other, <<~PATTERN
+          {
+            (if
+              (send (send $_recv :present?) :!)
+              $!begin
+              _recv
+            )
+            (if
+              (send (send $_recv :blank?) :!)
+              _recv
+              $!begin
+            )
+          }
+        PATTERN
+
+        sig { params(node: RuboCop::AST::IfNode).void }
+        def on_if(node)
+          return if ignore_if_node?(node)
+
+          redundant_receiver_and_other(node) do |receiver, other|
+            return if ignore_other_node?(other) || receiver.nil?
+
+            register_offense(node, receiver, other)
+          end
+
+          redundant_negative_receiver_and_other(node) do |receiver, other|
+            return if ignore_other_node?(other) || receiver.nil?
+
+            register_offense(node, receiver, other)
+          end
+        end
 
         private
 
