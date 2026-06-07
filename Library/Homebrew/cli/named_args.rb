@@ -12,7 +12,7 @@ module Homebrew
       include Utils::Output::Mixin
       extend T::Generic
 
-      Elem = type_member(:out) { { fixed: String } }.freeze
+      Elem = type_member(:out) { { fixed: String } }
 
       sig { returns(Args) }
       attr_reader :parent

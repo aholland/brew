@@ -426,7 +426,7 @@ module Homebrew
       include Enumerable
       extend T::Generic
 
-      Elem = type_member(:out) { { fixed: Offense } }.freeze
+      Elem = type_member(:out) { { fixed: Offense } }
 
       sig { params(paths: T::Array[T::Hash[String, T.untyped]]).void }
       def initialize(paths)
