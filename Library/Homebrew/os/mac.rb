@@ -152,6 +152,18 @@ module OS
       s&.path
     end
 
+    # Prefer CLT SDK when both Xcode and the CLT are installed.
+    # Expected results:
+    # 1. On Xcode-only systems, return the Xcode SDK.
+    # 2. On CLT-only systems, return the CLT SDK.
+    #
+    # @api public
+    sig { params(version: T.nilable(MacOSVersion)).returns(T.nilable(::Pathname)) }
+    def self.sdk_path_if_needed(version = nil)
+      # odeprecated "MacOS.sdk_path_if_needed", "MacOS.sdk_path"
+      sdk_path(version)
+    end
+
     sig { params(ids: String).returns(T.nilable(::Pathname)) }
     def self.app_with_bundle_id(*ids)
       require "bundle_version"

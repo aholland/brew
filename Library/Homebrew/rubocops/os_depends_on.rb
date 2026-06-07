@@ -32,6 +32,8 @@ module RuboCop
         CASK_STANZA_ORDER = T.let(RuboCop::Cask::Constants::STANZA_ORDER, T::Array[Symbol])
         MACOS_DEPENDENCY_STANZAS = T.let([:macos, :maximum_macos].freeze, T::Array[Symbol])
 
+        RESTRICT_ON_SEND = [:depends_on].freeze
+
         sig { params(node: RuboCop::AST::BlockNode).void }
         def on_block(node)
           send_node = node.children.first
@@ -39,6 +41,13 @@ module RuboCop
           return if send_node.method_name != :cask
 
           add_missing_macos_dependency(node)
+        end
+
+        sig { params(node: RuboCop::AST::SendNode).void }
+        def on_send(node)
+          autocorrect_macos_comparison_strings(node)
+          check_redundant_bare_macos(node)
+          check_conflicting_os_requirements(node)
         end
 
         private

@@ -46,6 +46,24 @@ module Language
     end
     private_class_method :java_home_shell
 
+    # Returns a `JAVA_HOME` environment variable to use a specific OpenJDK.
+    # Usually combined with either {Pathname#write_env_script} or
+    # {Pathname#env_script_all_files}.
+    #
+    # ### Example
+    #
+    # Use `openjdk@21` for all commands:
+    #
+    # ```ruby
+    # bin.env_script_all_files libexec/"bin", Language::Java.java_home_env("21")
+    # ```
+    #
+    # @api public
+    sig { params(version: T.nilable(String)).returns({ JAVA_HOME: String }) }
+    def self.java_home_env(version = nil)
+      { JAVA_HOME: java_home_shell(version) }
+    end
+
     # Returns a `JAVA_HOME` environment variable to use a default OpenJDK.
     # Unlike {.java_home_env} the OpenJDK can be overridden at runtime.
     #

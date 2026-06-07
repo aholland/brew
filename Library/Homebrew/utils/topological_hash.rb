@@ -11,9 +11,9 @@ module Utils
 
     CaskOrFormula = T.type_alias { T.any(Cask::Cask, Formula) }
 
-    K = type_member { { fixed: CaskOrFormula } }
-    V = type_member { { fixed: T::Array[CaskOrFormula] } }
-    Elem = type_member(:out) { { fixed: [CaskOrFormula, T::Array[CaskOrFormula]] } }
+    K = type_member { { fixed: CaskOrFormula } }.freeze
+    V = type_member { { fixed: T::Array[CaskOrFormula] } }.freeze
+    Elem = type_member(:out) { { fixed: [CaskOrFormula, T::Array[CaskOrFormula]] } }.freeze
 
     sig {
       params(
@@ -53,7 +53,5 @@ module Utils
 
       accumulator
     end
-
-    private
   end
 end

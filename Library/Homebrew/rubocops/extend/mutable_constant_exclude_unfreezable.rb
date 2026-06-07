@@ -24,6 +24,17 @@ module RuboCop
             PATTERN
           end
         end
+
+        sig { params(value: RuboCop::AST::Node).void }
+        def on_assignment(value)
+          T.unsafe(self).t_let(value) do |constant|
+            value = T.let(constant, RuboCop::AST::Node)
+          end
+          return if T.unsafe(self).t_type_alias?(value)
+          return if T.unsafe(self).type_member?(value)
+
+          super
+        end
       end
     end
   end

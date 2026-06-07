@@ -92,6 +92,16 @@ class Pathname
     end
   end
 
+  # Only appends to a file that is already created.
+  #
+  # @api public
+  sig { params(content: String, open_args: T.untyped).void }
+  def append_lines(content, **open_args)
+    raise "Cannot append file that doesn't exist: #{self}" unless exist?
+
+    T.unsafe(self).open("a", **open_args) { |f| f.puts(content) }
+  end
+
   # Write to a file atomically.
   #
   # NOTE: This always overwrites.
@@ -286,6 +296,26 @@ class Pathname
     quiet_system(which_install_info, "--delete", "--quiet", to_s, "#{dirname}/dir")
   end
 
+  # Writes an exec script in this folder for each target pathname.
+  #
+  # @api public
+  sig { params(targets: T.any(T::Array[T.any(String, Pathname)], String, Pathname)).void }
+  def write_exec_script(*targets)
+    targets.flatten!
+    if targets.empty?
+      opoo "Tried to write exec scripts to #{self} for an empty list of targets"
+      return
+    end
+    mkpath
+    targets.each do |target|
+      target = Pathname.new(target) # allow pathnames or strings
+      join(target.basename).write <<~SH
+        #!/bin/bash
+        exec "#{target}" "$@"
+      SH
+    end
+  end
+
   # Writes an exec script that sets environment variables.
   #
   # @api public
@@ -321,6 +351,43 @@ class Pathname
       #!/bin/bash
       #{env_export}exec "#{target}" #{args} "$@"
     SH
+  end
+
+  # Writes a wrapper env script and moves all files to the dst.
+  #
+  # @api public
+  sig { params(dst: Pathname, env: T::Hash[Symbol, T.any(String, Pathname)]).void }
+  def env_script_all_files(dst, env)
+    dst.mkpath
+    Pathname.glob("#{self}/*") do |file|
+      next if file.directory?
+
+      new_file = dst.join(file.basename)
+      raise Errno::EEXIST, new_file.to_s if new_file.exist?
+
+      dst.install(file)
+      file.write_env_script(new_file, env)
+    end
+  end
+
+  # Writes an exec script that invokes a Java jar.
+  #
+  # @api public
+  sig {
+    params(
+      target_jar:   T.any(String, Pathname),
+      script_name:  T.any(String, Pathname),
+      java_opts:    String,
+      java_version: T.nilable(String),
+    ).returns(Integer)
+  }
+  def write_jar_script(target_jar, script_name, java_opts = "", java_version: nil)
+    mkpath
+    (self/script_name).write <<~EOS
+      #!/bin/bash
+      export JAVA_HOME="#{Language::Java.overridable_java_home_env(java_version)[:JAVA_HOME]}"
+      exec "${JAVA_HOME}/bin/java" #{java_opts} -jar "#{target_jar}" "$@"
+    EOS
   end
 
   sig { params(from: T.any(String, Pathname)).void }

@@ -45,4 +45,40 @@ class StringInreplaceExtension
     errors << "expected replacement of #{before.inspect} with #{after.inspect}" if audit_result && result.nil?
     result
   end
+
+  # Looks for Makefile style variable definitions and replaces the
+  # value with "new_value", or removes the definition entirely.
+  #
+  # @api public
+  sig { params(flag: String, new_value: T.any(String, Pathname)).void }
+  def change_make_var!(flag, new_value)
+    return if gsub!(/^#{Regexp.escape(flag)}[ \t]*[\\?+:!]?=[ \t]*((?:.*\\\n)*.*)$/,
+                    "#{flag}=#{new_value}",
+                    audit_result: false)
+
+    errors << "expected to change #{flag.inspect} to #{new_value.inspect}"
+  end
+
+  # Removes variable assignments completely.
+  #
+  # @api public
+  sig { params(flags: T.any(String, T::Array[String])).void }
+  def remove_make_var!(flags)
+    Array(flags).each do |flag|
+      # Also remove trailing \n, if present.
+      next if gsub!(/^#{Regexp.escape(flag)}[ \t]*[\\?+:!]?=(?:.*\\\n)*.*$\n?/,
+                    "",
+                    audit_result: false)
+
+      errors << "expected to remove #{flag.inspect}"
+    end
+  end
+
+  # Finds the specified variable.
+  #
+  # @api public
+  sig { params(flag: String).returns(String) }
+  def get_make_var(flag)
+    T.must(inreplace_string[/^#{Regexp.escape(flag)}[ \t]*[\\?+:!]?=[ \t]*((?:.*\\\n)*.*)$/, 1])
+  end
 end

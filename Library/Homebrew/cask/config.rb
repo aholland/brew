@@ -163,6 +163,11 @@ module Cask
     end
 
     sig { returns(Pathname) }
+    def binarydir
+      @binarydir ||= T.let(HOMEBREW_PREFIX/"bin", T.nilable(Pathname))
+    end
+
+    sig { returns(Pathname) }
     def manpagedir
       @manpagedir ||= T.let(HOMEBREW_PREFIX/"share/man", T.nilable(Pathname))
     end

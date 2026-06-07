@@ -135,6 +135,14 @@ module Cask
         @arch.concat(arches.map { |arch| VALID_ARCHES.fetch(arch) })
       end
 
+      sig { params(args: T.any(String, Symbol)).returns(T.nilable(LinuxRequirement)) }
+      def linux=(*args)
+        raise "Only a single 'depends_on linux' is allowed." if @linux
+        raise "invalid 'depends_on linux' value: #{args.first.inspect}" if args.first != :any
+
+        @linux = LinuxRequirement.new
+      end
+
       sig { returns(T::Boolean) }
       def empty? = T.let(__getobj__, T::Hash[Symbol, T.untyped]).empty?
 

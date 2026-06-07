@@ -354,7 +354,6 @@ module Superenv
   def refurbish_args
     append_to_cccfg "O"
   end
-  # rubocop: enable Naming/MethodName
 end
 
 require "extend/os/extend/ENV/super"

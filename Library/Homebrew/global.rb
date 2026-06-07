@@ -64,6 +64,12 @@ module Homebrew
     sig { params(failed: T::Boolean).returns(T::Boolean) }
     attr_writer :failed
 
+    sig { params(raise_deprecation_exceptions: T::Boolean).returns(T::Boolean) }
+    attr_writer :raise_deprecation_exceptions
+
+    sig { params(auditing: T::Boolean).returns(T::Boolean) }
+    attr_writer :auditing
+
     # Check whether Homebrew is using the default prefix.
     #
     # @api internal

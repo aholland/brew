@@ -59,6 +59,9 @@ class Locale
   sig { returns(T.nilable(String)) }
   attr_reader :script
 
+  sig { returns(T.nilable(String)) }
+  attr_reader :region
+
   sig { params(language: T.nilable(String), script: T.nilable(String), region: T.nilable(String)).void }
   def initialize(language, script, region)
     raise ArgumentError, "#{self.class} cannot be empty" if language.nil? && region.nil? && script.nil?

@@ -7,6 +7,34 @@ module RuboCop
       class ArrayAlphabetization < Base
         extend AutoCorrector
 
+        sig { params(node: RuboCop::AST::SendNode).void }
+        def on_send(node)
+          return unless [:conflicts_with, :uninstall, :zap].include?(node.method_name)
+
+          node.each_descendant(:pair).each do |pair|
+            symbols = pair.children.select(&:sym_type?).map(&:value)
+            next if symbols.intersect?([:signal, :script, :early_script, :args, :input])
+
+            pair.each_descendant(:array).each do |array|
+              if array.children.length == 1
+                add_offense(array, message: "Avoid single-element arrays by removing the []") do |corrector|
+                  corrector.replace(array.source_range, array.children.first.source)
+                end
+              end
+
+              next if array.children.length <= 1
+
+              sorted_array = sort_array(array.source.split("\n")).join("\n")
+
+              next if array.source == sorted_array
+
+              add_offense(array, message: "The array elements should be ordered alphabetically") do |corrector|
+                corrector.replace(array.source_range, sorted_array)
+              end
+            end
+          end
+        end
+
         sig { params(source: T::Array[String]).returns(T::Array[String]) }
         def sort_array(source)
           # Combine each comment with the line(s) below so that they remain in the same relative location

@@ -122,6 +122,22 @@ module Cask
         version { [major, minor].reject(&:empty?).join(".") }
       end
 
+      # The major, minor and patch version.
+      #
+      # @api public
+      sig { returns(T.self_type) }
+      def major_minor_patch
+        version { [major, minor, patch].reject(&:empty?).join(".") }
+      end
+
+      # The minor and patch version.
+      #
+      # @api public
+      sig { returns(T.self_type) }
+      def minor_patch
+        version { [minor, patch].reject(&:empty?).join(".") }
+      end
+
       # The comma separated values of the version as array.
       #
       # @api public
@@ -136,6 +152,23 @@ module Cask
       sig { returns(T.self_type) }
       def before_comma
         version { split(",", 2).first }
+      end
+
+      # The version part after the first comma.
+      #
+      # @api public
+      sig { returns(T.self_type) }
+      def after_comma
+        version { split(",", 2).second }
+      end
+
+      # The version without any dividers.
+      #
+      # @see DIVIDER_REGEX
+      # @api public
+      sig { returns(T.self_type) }
+      def no_dividers
+        version { gsub(DIVIDER_REGEX, "") }
       end
 
       # The version with the given record separator removed from the end.

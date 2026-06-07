@@ -13,6 +13,13 @@ class LazyObject < Delegator
     super(callable)
   end
 
+  sig { params(callable: T.nilable(Proc)).void }
+  def __setobj__(callable)
+    @__callable__ = callable
+    @getobj_set = false
+    @__getobj__ = nil
+  end
+
   sig { params(_blk: T.untyped).returns(T.untyped) }
   def __getobj__(&_blk)
     return @__getobj__ if @getobj_set

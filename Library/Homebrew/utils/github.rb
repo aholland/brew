@@ -17,7 +17,9 @@ module GitHub
 
   MAX_PER_PAGE = 100
 
-  WorkflowArray = T.type_alias { [T::Array[T::Hash[String, T.untyped]], String, String, String, String, T::Array[String], String] }
+  WorkflowArray = T.type_alias do
+    [T::Array[T::Hash[String, T.untyped]], String, String, String, String, T::Array[String], String]
+  end
 
   sig { params(repo: String, filters: T.untyped).returns(T::Array[T::Hash[String, T.untyped]]) }
   def self.issues(repo:, **filters)
