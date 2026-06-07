@@ -53,5 +53,17 @@ module Utils
 
       accumulator
     end
+
+    private
+
+    sig { override.params(block: T.proc.params(arg0: K).void).void }
+    def tsort_each_node(&block)
+      each_key(&block)
+    end
+
+    sig { override.params(node: K, block: T.proc.params(arg0: CaskOrFormula).void).returns(V) }
+    def tsort_each_child(node, &block)
+      fetch(node).each(&block)
+    end
   end
 end
