@@ -3873,6 +3873,12 @@ Check for typechecking errors using Sorbet.
 
 : Start the Sorbet LSP server.
 
+`--deadcode`
+
+: Find and remove dead code identified by Spoom. Test code is excluded from the
+  analysis so that definitions only referenced by tests are also treated as
+  dead.
+
 `--dir`
 
 : Typecheck all files in a specific directory.

@@ -26,6 +26,10 @@ module Homebrew
                description: "Try upgrading `typed` sigils."
         switch "--lsp",
                description: "Start the Sorbet LSP server."
+        switch "--deadcode",
+               description: "Find and remove dead code identified by Spoom. Test code is excluded " \
+                            "from the analysis so that definitions only referenced by tests are " \
+                            "also treated as dead."
         flag   "--dir=",
                description: "Typecheck all files in a specific directory."
         flag   "--file=",
@@ -38,6 +42,12 @@ module Homebrew
         conflicts "--lsp", "--update"
         conflicts "--lsp", "--update-all"
         conflicts "--lsp", "--fix"
+        conflicts "--deadcode", "--lsp"
+        conflicts "--deadcode", "--update"
+        conflicts "--deadcode", "--update-all"
+        conflicts "--deadcode", "--fix"
+        conflicts "--deadcode", "--dir"
+        conflicts "--deadcode", "--file"
 
         named_args :tap
       end
@@ -86,6 +96,11 @@ module Homebrew
                      "--sorbet", sorbet_bin
             end
 
+            return
+          end
+
+          if args.deadcode?
+            remove_dead_code
             return
           end
 
@@ -210,6 +225,59 @@ module Homebrew
 
         new_content = generate_trimmed_rbi(original_content, nodes_to_keep, parsed)
         rbi_path.write(new_content)
+      end
+
+      sig { void }
+      def remove_dead_code
+        # Exclude test code (in addition to Spoom's defaults) so that definitions
+        # only referenced by their specs are still reported as dead and removed.
+        # `--exclude` takes all values at once and replaces Spoom's defaults, so
+        # the defaults are repeated here alongside `test/`.
+        excludes = %w[vendor/ sorbet/ tmp/ log/ node_modules/ test/]
+        spoom_exec = %w[bundle exec spoom deadcode --no-color --exclude] + excludes
+
+        ohai "Searching for dead code with Spoom..."
+        # Spoom exits non-zero when it finds candidates, so don't fail on that.
+        # Candidates are printed to stderr, so merge it into the captured output.
+        output = Utils.popen_read(*spoom_exec, err: :out)
+
+        locations = output.lines.filter_map { |line| line[/\s(\S+:\d+:\d+-\d+:\d+)\s*$/, 1] }
+
+        if locations.empty?
+          ohai "No dead code found!"
+          return
+        end
+
+        # Remove from the bottom of each file upwards so that removing one
+        # location doesn't shift the line numbers of those still to be removed.
+        locations.sort_by! do |location|
+          file, line_column = location.split(":", 2)
+          line, column = line_column.to_s.split(":", 2)
+          [file.to_s, line.to_i, column.to_i]
+        end
+
+        removed = 0
+        skipped = []
+        locations.reverse_each do |location|
+          # Spoom fails on code it can't safely rewrite (e.g. methods wrapped in
+          # `begin`/`rescue` or files it cannot parse). Capture its output so a
+          # failure doesn't dump a backtrace, and skip that location instead.
+          Utils.safe_popen_read("bundle", "exec", "spoom", "deadcode", "remove", location, err: :out)
+          removed += 1
+        rescue ErrorDuringExecution
+          skipped << location
+        end
+
+        # Spoom writes a temporary `PATCH` file while computing diffs; clean up
+        # any copy left behind by a removal that failed partway through.
+        patch = HOMEBREW_LIBRARY_PATH/"PATCH"
+        patch.unlink if patch.exist?
+
+        ohai "Removed #{Utils.pluralize("dead code definition", removed, include_count: true)}."
+        return if skipped.empty?
+
+        opoo "Skipped #{Utils.pluralize("definition", skipped.count, include_count: true)} Spoom could not remove:"
+        skipped.each { |location| puts "  #{location}" }
       end
 
       private

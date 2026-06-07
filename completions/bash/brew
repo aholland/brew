@@ -3022,6 +3022,7 @@ _brew_typecheck() {
   case "${cur}" in
     -*)
       __brewcomp "
+      --deadcode
       --debug
       --dir
       --file

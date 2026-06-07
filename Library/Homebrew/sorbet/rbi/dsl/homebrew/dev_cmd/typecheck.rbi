@@ -11,6 +11,9 @@ class Homebrew::DevCmd::Typecheck
 end
 
 class Homebrew::DevCmd::Typecheck::Args < Homebrew::CLI::Args
+  sig { returns(T::Boolean) }
+  def deadcode?; end
+
   sig { returns(T.nilable(String)) }
   def dir; end
 

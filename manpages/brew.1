@@ -2464,6 +2464,9 @@ Try upgrading \fBtyped\fP sigils\.
 \fB\-\-lsp\fP
 Start the Sorbet LSP server\.
 .TP
+\fB\-\-deadcode\fP
+Find and remove dead code identified by Spoom\. Test code is excluded from the analysis so that definitions only referenced by tests are also treated as dead\.
+.TP
 \fB\-\-dir\fP
 Typecheck all files in a specific directory\.
 .TP

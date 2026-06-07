@@ -1924,6 +1924,7 @@ __fish_brew_complete_arg 'trust' -l verbose -d 'Make some output more verbose'
 
 
 __fish_brew_complete_cmd 'typecheck' 'Check for typechecking errors using Sorbet'
+__fish_brew_complete_arg 'typecheck' -l deadcode -d 'Find and remove dead code identified by Spoom. Test code is excluded from the analysis so that definitions only referenced by tests are also treated as dead'
 __fish_brew_complete_arg 'typecheck' -l debug -d 'Display any debugging information'
 __fish_brew_complete_arg 'typecheck' -l dir -d 'Typecheck all files in a specific directory'
 __fish_brew_complete_arg 'typecheck' -l file -d 'Typecheck a single file'

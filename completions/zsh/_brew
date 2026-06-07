@@ -2465,17 +2465,18 @@ _brew_trust() {
 # brew typecheck
 _brew_typecheck() {
   _arguments \
+    '(--lsp --update --update-all --fix --dir --file)--deadcode[Find and remove dead code identified by Spoom. Test code is excluded from the analysis so that definitions only referenced by tests are also treated as dead]' \
     '--debug[Display any debugging information]' \
-    '(--file)--dir[Typecheck all files in a specific directory]' \
-    '(--dir)--file[Typecheck a single file]' \
-    '(--lsp)--fix[Automatically fix type errors]' \
+    '(--file --deadcode)--dir[Typecheck all files in a specific directory]' \
+    '(--dir --deadcode)--file[Typecheck a single file]' \
+    '(--lsp --deadcode)--fix[Automatically fix type errors]' \
     '--help[Show this message]' \
     '--ignore[Ignores input files that contain the given string in their paths (relative to the input path passed to Sorbet)]' \
-    '(--update --update-all --fix)--lsp[Start the Sorbet LSP server]' \
+    '(--update --update-all --fix --deadcode)--lsp[Start the Sorbet LSP server]' \
     '--quiet[Silence all non-critical errors]' \
     '--suggest-typed[Try upgrading `typed` sigils]' \
-    '(--lsp)--update[Update RBI files]' \
-    '(--lsp)--update-all[Update all RBI files rather than just updated gems]' \
+    '(--lsp --deadcode)--update[Update RBI files]' \
+    '(--lsp --deadcode)--update-all[Update all RBI files rather than just updated gems]' \
     '--verbose[Make some output more verbose]' \
     - tap \
     '*:tap:__brew_any_tap'
